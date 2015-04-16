@@ -66,7 +66,7 @@ package com.Leo.ui
 			var bmd:BitmapData = new BitmapData(w,h,true,0x000000);
 			bmd.draw(_shape);
 			
-			var _texture:Texture = Texture.fromBitmapData(bmd);
+			var _texture:Texture = Texture.fromBitmapData(bmd,false);
 			return (new Image(_texture));
 		}
 		
