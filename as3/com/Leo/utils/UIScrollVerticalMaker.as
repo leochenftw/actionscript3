@@ -58,6 +58,7 @@ package com.Leo.utils
 			child.x = lastChild ? lastChild.x : _xgap;
 			child.y = lastChild ? lastChild.y + lastChild.height + _ygap : _ygap;
 			adjustMaximumSlide();
+			_maximumSlide -= 10;
 		}
 	}
 }
