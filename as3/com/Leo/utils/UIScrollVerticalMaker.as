@@ -13,8 +13,11 @@ package com.Leo.utils
 		protected var _xgap:Number = 0;
 		protected var _ygap:Number = 0;
 		protected var _thisMask:Shape;
-		
-		public function UIScrollVerticalMaker(screen:Sprite, width:Number, height:Number, xgap:Number=0, ygap:Number=0, style:String = "") {
+		protected var _w:Number;
+		protected var _associate:UIScrollVerticalMaker;
+		public function UIScrollVerticalMaker(screen:Sprite, width:Number, height:Number, xgap:Number=0, ygap:Number=0, style:String = "",associate:UIScrollVerticalMaker=null) {
+			_w = width;
+			_associate = associate;
 			super(screen,XML("<null "+style+"/>"), new Attributes(0, 0, width, height));
 			_slider.addChild(_pureLayer = new Sprite());
 			_thisMask = new Shape;
@@ -31,6 +34,46 @@ package com.Leo.utils
 		
 		public function set ygap(value:Number):void {
 			_ygap = value;
+		}
+		
+		public override function set height(value:Number):void {
+			_thisMask.graphics.clear();
+			_thisMask.graphics.beginFill(0x000000);
+			_thisMask.graphics.drawRect(0,0,_w,height);
+			_thisMask.graphics.endFill();
+			this.attributes.height = value;
+			adjustMaximumSlide();
+			_maximumSlide -= 10;
+		}
+		
+		public function expand(child:DisplayObject,extraHeight:Number):void {
+			var i:int = _pureLayer.getChildIndex(child)+1;
+			for (i;i<_pureLayer.numChildren;i++){
+				var thisChild:DisplayObject = _pureLayer.getChildAt(i);
+				if (i<_pureLayer.numChildren-1) {
+					Statics.tLite(thisChild,0.25,{y:thisChild.y + extraHeight});
+				}else{
+					Statics.tLite(thisChild,0.25,{y:thisChild.y + extraHeight, onUpdate:function():void {
+						adjustMaximumSlide();
+						_maximumSlide -= 10;
+					}});
+				}
+			}
+		}
+		
+		public function collapse(child:DisplayObject,deductHeight:Number):void {
+			var i:int = _pureLayer.getChildIndex(child)+1;
+			for (i;i<_pureLayer.numChildren;i++){
+				var thisChild:DisplayObject = _pureLayer.getChildAt(i);
+				if (i<_pureLayer.numChildren-1) {
+					Statics.tLite(thisChild,0.25,{y:thisChild.y - deductHeight});
+				}else{
+					Statics.tLite(thisChild,0.25,{y:thisChild.y - deductHeight, onUpdate:function():void {
+						adjustMaximumSlide();
+						_maximumSlide -= 10;
+					}});
+				}
+			}
 		}
 		
 		

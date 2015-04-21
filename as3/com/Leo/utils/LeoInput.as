@@ -67,7 +67,7 @@ package com.Leo.utils
 			
 			if (prompt.length > 0){
 				_prompt = prompt;
-				this._text.htmlText = "<font color=\"#999999\"><i>" + _prompt + "</i></font>";
+				this._text.htmlText = "<font color=\"#999999\"><em>" + _prompt + "</em></font>";
 				this._text.addEventListener(FocusEvent.FOCUS_IN, focIn);
 				this._text.addEventListener(FocusEvent.FOCUS_OUT, focOut);
 			}
