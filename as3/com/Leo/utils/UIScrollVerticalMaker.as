@@ -14,7 +14,7 @@ package com.Leo.utils
 		protected var _ygap:Number = 0;
 		protected var _thisMask:Shape;
 		
-		public function UIScrollVerticalMaker(screen:Sprite, width:Number, height:Number, xgap:Number, ygap:Number, style:String = "") {
+		public function UIScrollVerticalMaker(screen:Sprite, width:Number, height:Number, xgap:Number=0, ygap:Number=0, style:String = "") {
 			super(screen,XML("<null "+style+"/>"), new Attributes(0, 0, width, height));
 			_slider.addChild(_pureLayer = new Sprite());
 			_thisMask = new Shape;
