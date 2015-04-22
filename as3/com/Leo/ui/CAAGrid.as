@@ -1,6 +1,8 @@
 package com.Leo.ui
 {
 	import com.greensock.TweenMax;
+	import com.greensock.easing.*;
+	import com.greensock.easing.Linear;
 	
 	import flash.display.Shape;
 	import flash.display.Sprite;
@@ -51,6 +53,7 @@ package com.Leo.ui
 			_mask.graphics.beginFill(0x000000,1);
 			_mask.graphics.drawRect(0,0,w+1,h+1);
 			_mask.graphics.endFill();
+			addChild(_mask);
 			_grid.mask = _mask;
 			_borderThickness = borderThickness;
 			_borderColor = borderColor;
@@ -83,44 +86,49 @@ package com.Leo.ui
 		{
 			stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUp);
 			stage.removeEventListener(Event.ENTER_FRAME, updateGrid);
-			
-			trace('Mouse up @ '+stage.mouseX + ', ' + stage.mouseY);
-			
+						
 			var thisX:int = this.x;
 			var thisY:int = this.y;
 			vX = _xy.x = _pivitX;
 			vY = _xy.y = _pivitY;
 			
-			
-			if (_pivitX > 0 || _pivitY > 0 || _pivitX + _numX*_c < _w || _pivitY + _numY*_c < _h) {
-				var tx:int = _pivitX;
-				var ty:int = _pivitY;
-				if (_pivitX>0) {
-					tx = 0;
-				}else if (_pivitX + _gridWidth < _w) {
-					tx = _w-_gridWidth-thisX;
-				}
-				if (_pivitY>0) {
-					ty = 0;
-				}else if (_pivitY + _gridHeight < _h) {
-					ty = _h-_gridHeight-thisY;
-				}
-				_tween = TweenMax.to(_xy,0.25,{
-					x:tx,
-					y:ty,
-					onUpdate:function():void {
-						drawGrid(_xy.x,_xy.y);
-						vX = _xy.x;
-						vY = _xy.y;
-						_onUpdate(vX,vY);
-					},
-					onComplete:function():void {
+			_tween = TweenMax.to(_xy,0.05,{
+				ease: Linear.easeNone,
+				x:_pivitX+(stage.mouseX-_nowX)*3,
+				y:_pivitY+(stage.mouseY-_nowY)*3,
+				onComplete:function():void {
+					if (_pivitX > 0 || _pivitY > 0 || _pivitX + _numX*_c < _w || _pivitY + _numY*_c < _h) {
+						var tx:int = _pivitX;
+						var ty:int = _pivitY;
+						if (_pivitX>0) {
+							tx = 0;
+						}else if (_pivitX + _gridWidth < _w) {
+							tx = _w-_gridWidth-thisX;
+						}
+						if (_pivitY>0) {
+							ty = 0;
+						}else if (_pivitY + _gridHeight < _h) {
+							ty = _h-_gridHeight-thisY;
+						}
+						_tween = TweenMax.to(_xy,0.25,{
+							ease: Linear.easeNone,
+							x:tx,
+							y:ty,
+							onUpdate:function():void {
+								drawGrid(_xy.x,_xy.y);
+								vX = _xy.x;
+								vY = _xy.y;
+								_onUpdate(vX,vY);
+							},
+							onComplete:function():void {
+								_onComplete(vX,vY);
+							}
+						});
+					}else{
 						_onComplete(vX,vY);
 					}
-				});
-			}else{
-				_onComplete(vX,vY);
-			}
+				}
+			});
 		}
 		
 		
