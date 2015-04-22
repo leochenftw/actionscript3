@@ -1,12 +1,13 @@
 package com.Leo.ui
 {
+	import com.Leo.events.GridEvent;
 	import com.greensock.TweenMax;
-	import com.greensock.easing.*;
 	import com.greensock.easing.Linear;
 	
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.MouseEvent;
 	
 	public class CAAGrid extends Sprite
@@ -20,25 +21,23 @@ package com.Leo.ui
 		private var _mask:Shape = new Shape;
 		private var _w:int;
 		private var _h:int;
-		private var _landX:int;
-		private var _landY:int;
+		private var _landX:Number;
+		private var _landY:Number;
 		
-		private var _pivitX:int;
-		private var _pivitY:int;
+		private var _pivitX:Number;
+		private var _pivitY:Number;
 		private var _incr:int = 1;
 		private var _xy:Object = {x:0,y:0};
 		private var _tween:TweenMax;
-		private var vX:int = 0;
-		private var vY:int = 0;
-		private var _onUpdate:Function;
-		private var _onComplete:Function;
+		private var vX:Number = 0;
+		private var vY:Number = 0;
 		private var _gap:int = 0;
 		private var _gridWidth:int;
 		private var _gridHeight:int;
 		
-		private var _nowX:int;
-		private var _nowY:int;
-		public function CAAGrid(w:int, h:int, gap:int, numX:int, numY:int,borderThickness:Number,borderColor: uint,c:int,onUpdate:Function = null,onComplete:Function = null)
+		private var _nowX:Number;
+		private var _nowY:Number;
+		public function CAAGrid(w:int, h:int, gap:int, numX:int, numY:int,borderThickness:Number,borderColor: uint,c:int)
 		{
 			_w = w;
 			_h = h;
@@ -46,8 +45,6 @@ package com.Leo.ui
 			_numX = numX;
 			_numY = numY;
 			_c = c;
-			_onUpdate = onUpdate;
-			_onComplete = onComplete;
 			
 			addChild(_grid);
 			_mask.graphics.beginFill(0x000000,1);
@@ -75,7 +72,7 @@ package com.Leo.ui
 		protected function mouseDown(e:MouseEvent):void
 		{
 			if (_tween) _tween.kill();
-			
+			dispatchEvent(new GridEvent(GridEvent.ON_START));
 			_landX = stage.mouseX;
 			_landY = stage.mouseY;
 			stage.addEventListener(MouseEvent.MOUSE_UP, mouseUp);
@@ -92,7 +89,9 @@ package com.Leo.ui
 			vX = _xy.x = _pivitX;
 			vY = _xy.y = _pivitY;
 			
-			_tween = TweenMax.to(_xy,0.05,{
+			var speed:Number = 1/Math.sqrt(Math.pow((stage.mouseX-_nowX),2) + Math.pow((stage.mouseY-_nowY),2));
+			
+			_tween = TweenMax.to(_xy,speed,{
 				ease: Linear.easeNone,
 				x:_pivitX+(stage.mouseX-_nowX)*3,
 				y:_pivitY+(stage.mouseY-_nowY)*3,
@@ -118,14 +117,14 @@ package com.Leo.ui
 								drawGrid(_xy.x,_xy.y);
 								vX = _xy.x;
 								vY = _xy.y;
-								_onUpdate(vX,vY);
+								dispatchEvent(new GridEvent(GridEvent.ON_UPDATE));
 							},
 							onComplete:function():void {
-								_onComplete(vX,vY);
+								dispatchEvent(new GridEvent(GridEvent.ON_COMPLETE));
 							}
 						});
 					}else{
-						_onComplete(vX,vY);
+						dispatchEvent(new GridEvent(GridEvent.ON_COMPLETE));
 					}
 				}
 			});
@@ -162,10 +161,16 @@ package com.Leo.ui
 			_grid.graphics.drawRect(prX,prY + _numY*_c + _c+2 + _gap*2, _numX*_c, _c);
 			_grid.graphics.endFill();
 			
-			_onUpdate(_pivitX,_pivitY);
+			dispatchEvent(new GridEvent(GridEvent.ON_UPDATE));
 		}
 		
+		public function get gridx():Number {
+			return _pivitX;
+		}
 		
+		public function get gridy():Number {
+			return _pivitY;
+		}
 	}
 }
 
