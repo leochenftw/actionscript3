@@ -1,7 +1,7 @@
 package com.Leo.utils
 {
 	import com.ruochi.shape.RoundRect;
-	
+	import com.greensock.TweenLite;
 	import flash.display.Sprite;
 	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
@@ -22,7 +22,7 @@ package com.Leo.utils
 		protected var _parentScreen:Sprite;
 		protected var _bg:RoundRect;
 		protected var _text:TextField;
-		
+		protected var _parentY:Number = 0;
 		public function LeoInput(w:int, h:int, parentScreen:Sprite, restrictString:String = "", 
 								   tf:TextFormat = null, border:Boolean = false, 
 								   backgroundColor:uint = 0, prompt:String = "",rounded:int = 0, 
@@ -32,6 +32,7 @@ package com.Leo.utils
 			_w = w;
 			_h = h;
 			_parentScreen = parentScreen;
+			_parentY = _parentScreen.y;
 			this._text = new TextField;
 			if (tf){
 				_tf = tf;
@@ -75,8 +76,8 @@ package com.Leo.utils
 			_callBack = callBack?callBack:null; 
 			//_moveScreen = moveScreenFunction?moveScreenFunction:null;
 			
-			this.addEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_ACTIVATING, onKeyboardChange);
-			this.addEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_DEACTIVATE, onKeyboardChange);
+			this.addEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_ACTIVATING, onKeyboardUp);
+			this.addEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_DEACTIVATE, onKeyboardDown);
 			this.addEventListener(KeyboardEvent.KEY_DOWN, downdown);
 			
 			if (border) {
@@ -95,6 +96,8 @@ package com.Leo.utils
 					_bg.graphics.lineTo(0,0);
 				}
 			}
+			
+			_text.softKeyboardInputAreaOfInterest = _text.getBounds(_text);
 		}
 		
 		public function set wordWrap(b:Boolean):void {
@@ -103,7 +106,6 @@ package com.Leo.utils
 		
 		public function set multiline(b:Boolean):void {
 			_text.multiline = b;
-			_text.softKeyboardInputAreaOfInterest = _text.getBounds(_text);
 		}
 		
 		private function downdown(e:KeyboardEvent):void {
@@ -180,10 +182,14 @@ package com.Leo.utils
 			return _bg?_bg.width:this._text.width;
 		}
 		
-		private function onKeyboardChange( event:SoftKeyboardEvent ):void 
+		private function onKeyboardDown( event:SoftKeyboardEvent ):void 
 		{ 
-			
-			var offset:int = 0; 
+			TweenLite.to(_parentScreen,0.25,{y: _parentY});
+		}
+		
+		private function onKeyboardUp( event:SoftKeyboardEvent ):void 
+		{ 
+			var offset:Number = 0; 
 			
 			//if the softkeyboard is open and the field is at least partially covered 
 			if( (this.stage.softKeyboardRect.y != 0) && (_text.y + _text.height > this.stage.softKeyboardRect.y) ) 
@@ -191,8 +197,8 @@ package com.Leo.utils
 			
 			//but don't push the top of the field above the top of the screen 
 			if( _text.y - offset < 0 ) offset += _text.y - offset; 
-			
-			_parentScreen.y = -offset;             
+			//_parentScreen.y = -offset;
+			TweenLite.to(_parentScreen,0.25,{y: -offset});
 		}
 	}
 }
