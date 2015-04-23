@@ -135,6 +135,13 @@ package com.Leo.ui
 			_onUpdate(_pivitX,_pivitY);
 		}
 		
+		public override function get x():Number {
+			return _grid.x;
+		}
+		
+		public override function get y():Number {
+			return _grid.y;
+		}
 		
 	}
 }

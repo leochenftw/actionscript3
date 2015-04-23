@@ -35,14 +35,17 @@ package com.Leo.ui
 			_numX = numX;
 			_numY = numY;
 			_c = c;
+			_borderThickness = borderThickness;
+			_borderColor = borderColor;
 			drawGrid();
 			addChild(_grid);
 			bounds = new Rectangle(0,0,_w,_h);
-			super();
+			
 			
 			blitMask = new BlitMask(_grid, 0, 0, _w, _h, false);
 			
 			blitMask.addEventListener(MouseEvent.MOUSE_DOWN, mousedownHandler);
+			
 		}
 		
 		private function drawGrid(prX:Number = 0, prY:Number = 0):void {
@@ -66,7 +69,6 @@ package com.Leo.ui
 			_grid.graphics.drawRect(prX,prY + _numY*_c + _c+2 + _gap*2, _numX*_c, _c);
 			_grid.graphics.endFill();
 			
-			dispatchEvent(new GridEvent(GridEvent.ON_UPDATE));
 		}
 		
 		protected function mousedownHandler(e:MouseEvent):void
@@ -81,6 +83,7 @@ package com.Leo.ui
 			t1 = t2 = getTimer();
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 			stage.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
+			dispatchEvent(new GridEvent(GridEvent.ON_START));
 		}
 		
 		protected function mouseUpHandler(e:MouseEvent):void
@@ -93,7 +96,12 @@ package com.Leo.ui
 			ThrowPropsPlugin.to(_grid, {throwProps:{
 				y:{velocity:yVelocity, max:bounds.top, min:bounds.top - yOverlap, resistance:300},
 				x:{velocity:xVelocity, max:bounds.left, min:bounds.left - xOverlap, resistance:300}
-			}, onUpdate:blitMask.update, ease:Strong.easeOut
+			}, onUpdate:function():void{
+				blitMask.update();
+				dispatchEvent(new GridEvent(GridEvent.ON_UPDATE));
+			}, onComplete:function():void {
+				dispatchEvent(new GridEvent(GridEvent.ON_COMPLETE));
+			}, ease:Strong.easeOut
 			}, 10, 0.3, 1);
 		}
 		
@@ -127,7 +135,16 @@ package com.Leo.ui
 				y1 = _grid.y;
 				t1 = t;
 			}
+			
+			dispatchEvent(new GridEvent(GridEvent.ON_UPDATE));
 			e.updateAfterEvent();
+		}
+		public override function get x():Number {
+			return _grid.x;
+		}
+		
+		public override function get y():Number {
+			return _grid.y;
 		}
 	}
 }
