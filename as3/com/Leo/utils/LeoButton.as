@@ -40,7 +40,12 @@ package com.Leo.utils
 			addChildAt(_bg,0);
 			
 			_label.x = (_bg.width - _label.width)*0.5;
-			_label.y = (_bg.height - _label.height)*0.5;
+			_label.y = Math.round((_bg.height - _label.height*2 + _label.textHeight)*0.5);
+		}
+		
+		public function set bgAlpha(n:Number):void {
+			_bgOpacity = n;
+			drawBG();
 		}
 		
 		public override function set width(value:Number):void {
