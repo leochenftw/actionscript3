@@ -8,8 +8,8 @@ package com.Leo.utils
 			if (s.length == 0) {
 				n = 0;
 			}else{
-				s = s.replace(/$/gi,'');
-				s = s.replace(/,/gi,'');
+				s = s.replace(/\$/gi,'');
+				s = s.replace(/\,/gi,'');
 				n = Number(s);
 				n = isNaN(n)?0:n;
 			}
@@ -18,7 +18,6 @@ package com.Leo.utils
 		if (value is Number || value is int) {
 			n = value;
 		}
-		
 		return n;
 	}
 }

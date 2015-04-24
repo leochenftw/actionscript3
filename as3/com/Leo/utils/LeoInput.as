@@ -1,7 +1,8 @@
 package com.Leo.utils
 {
-	import com.ruochi.shape.RoundRect;
 	import com.greensock.TweenLite;
+	import com.ruochi.shape.RoundRect;
+	
 	import flash.display.Sprite;
 	import flash.events.FocusEvent;
 	import flash.events.KeyboardEvent;
@@ -41,8 +42,7 @@ package com.Leo.utils
 			}
 			this._text.type = "input";
 			this._text.defaultTextFormat = _tf;
-			
-			this._text.height = int(this._text.textHeight*1.2);
+			//this._text.height = int(this._text.textHeight*1.2);
 			
 			if (rounded > 0){
 				_round = rounded;
@@ -171,6 +171,10 @@ package com.Leo.utils
 		
 		public function set displayAsPassword(b:Boolean):void {
 			this._text.displayAsPassword = b;
+		}
+		
+		public function get textHeight():Number {
+			return this._text.textHeight;
 		}
 		
 		override public function get height():Number {

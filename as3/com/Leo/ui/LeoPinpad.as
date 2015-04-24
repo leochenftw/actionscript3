@@ -1,6 +1,8 @@
 package com.Leo.ui
 {
+	import com.Leo.utils.pf;
 	import com.Leo.utils.LeoButton;
+	import com.Leo.utils.dFormat;
 	import com.danielfreeman.madcomponents.UILabel;
 	
 	import flash.display.Sprite;
@@ -11,11 +13,14 @@ package com.Leo.ui
 	{
 		private var _currentPressedButton:LeoButton;
 		private var _label:UILabel;
-		public function LeoPinpad()
+		private var _dollarMode:Boolean = false;
+		private var _clickBlocker:Sprite = new Sprite;
+		public function LeoPinpad(dollarMode:Boolean = false)
 		{
+			_dollarMode = dollarMode;
 			var w:int = Statics.STAGEWIDTH;
 			var h:int = Statics.STAGEHEIGHT;
-			this.graphics.beginFill(0x000000,0.95);
+			this.graphics.beginFill(0x000000,0.98);
 			this.graphics.drawRect(0,0,w,Math.round(h*0.4));
 			this.graphics.endFill();
 			
@@ -38,6 +43,11 @@ package com.Leo.ui
 			this.graphics.moveTo(Math.round(this.width*0.25),0);
 			this.graphics.lineTo(Math.round(this.width*0.25), this.height-1);
 			
+			_clickBlocker.graphics.beginFill(0xffffff,0);
+			_clickBlocker.graphics.drawRect(0,0,Statics.STAGEWIDTH, Statics.STAGEHEIGHT);
+			_clickBlocker.graphics.endFill();
+			
+			_clickBlocker.name = 'pinpad_screen_blocker';
 			
 			var rn:int = 1;
 			var cn:int = 0;
@@ -63,8 +73,13 @@ package com.Leo.ui
 				btn.width = gw;
 				btn.x = cn*gw;
 				btn.y = this.height-rn*gh;
-				if (rn > 1) btn.y++;
-				if (rn == 4) btn.y++; 
+				if (rn > 1) {
+					btn.height = btn.height + 1;
+				}
+				if (rn == 4) {
+					btn.y--;
+					btn.height = btn.height + 1;
+				}
 				if (numChildren%3 == 0 && i > 0) {
 					rn++;
 					cn = 0;
@@ -84,19 +99,37 @@ package com.Leo.ui
 			btnEnter.y = Math.round(this.height*0.5);
 			btnEnter.x = Math.round(this.width*0.75)+1;
 			
-			addEventListener(MouseEvent.MOUSE_DOWN, mousedownHandler);
 			addEventListener(Event.ADDED_TO_STAGE, onStage);
 			addEventListener(Event.REMOVED_FROM_STAGE, offStage);
 		}
 		
 		protected function onStage(e:Event):void
 		{
+			stage.addChildAt(_clickBlocker,stage.numChildren-1);
 			this.y = Statics.STAGEHEIGHT;
 			Statics.tLite(this, 0.25, {y: Math.round(Statics.STAGEHEIGHT*0.6)});
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, mousedownHandler);
+		}
+		
+		public function close():void {
+			_label.text = dFormat(_label.text);
+			if (stage) {
+				stage.removeChild(_clickBlocker);
+				stage.removeEventListener(MouseEvent.MOUSE_DOWN, mousedownHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_UP, mouseupHandler);
+			}
+			var lcThis:LeoPinpad = this;
+			Statics.tLite(this, 0.25, {y: Statics.STAGEHEIGHT, onComplete:function():void {
+				if (lcThis.parent) lcThis.parent.removeChild(lcThis);
+			}});
 		}
 		
 		protected function offStage(e:Event):void
 		{
+			if (_currentPressedButton) {
+				_currentPressedButton.bgAlpha = 0;
+				_currentPressedButton = null;
+			}
 			this.y = Statics.STAGEHEIGHT;
 			_label = null;
 		}
@@ -108,18 +141,49 @@ package com.Leo.ui
 		protected function mousedownHandler(e:MouseEvent):void
 		{
 			stage.addEventListener(MouseEvent.MOUSE_UP, mouseupHandler);
+			
+			if (e.target.name == 'pinpad_screen_blocker') {
+				close();
+				return;
+			}
+			
 			if (e.target is LeoButton || e.target.parent is LeoButton) {
 				_currentPressedButton = (e.target is LeoButton)?(e.target as LeoButton):(e.target.parent as LeoButton);
 				_currentPressedButton.bgAlpha = 0.2;
 				if (_label) {
 					switch (_currentPressedButton.label) {
 						case '✗':
-							_label.text = _label.text.slice(0,-1);
+							if (_dollarMode) {
+								if (_label.text == '$' || _label.text == '$0.00' || _label.text == '$0.' || (_label.text.indexOf('$') == 0 && _label.text.length == 2)) {
+									_label.text = '$0.00';
+								}else{
+									_label.text = _label.text.slice(0,-1);
+								}
+							}else{
+								if (_label.text.length > 0) {
+									_label.text = _label.text.slice(0,-1);
+								}
+							}
 							break;
 						case '✓':
-							
+							close();
+							break;
+						case 'C':
+							_label.text = _dollarMode?'$0.00':'';
+							break;
+						case '.':
+							if (_label.text.indexOf('.') < 0) {
+								_label.appendText(_currentPressedButton.label);
+							}else{
+								if (pf(_label.text) == 0) {
+									_label.text = '$0.';
+								}
+							}
 							break;
 						default:
+							if (_currentPressedButton.label != '0') {
+								if (_label.text == '$0.00') _label.text = '$';
+							}
 							_label.appendText(_currentPressedButton.label);
 							break;
 					}
@@ -129,7 +193,9 @@ package com.Leo.ui
 		
 		protected function mouseupHandler(e:MouseEvent):void
 		{
-			stage.removeEventListener(MouseEvent.MOUSE_UP, mouseupHandler);
+			if (stage){
+				stage.removeEventListener(MouseEvent.MOUSE_UP, mouseupHandler);
+			}
 			if (_currentPressedButton) {
 				_currentPressedButton.bgAlpha = 0;
 				_currentPressedButton = null;

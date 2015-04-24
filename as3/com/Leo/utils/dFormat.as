@@ -8,7 +8,7 @@ package com.Leo.utils
 		}
 		
 		if (value is String) {
-			n = Number(value);
+			n = pf(value);
 			n = isNaN(n)?0:n;
 		}
 		
