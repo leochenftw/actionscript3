@@ -9,7 +9,7 @@ package com.Leo.utils
 				n = 0;
 			}else{
 				s = s.replace(/\$/gi,'');
-				s = s.replace(/\,/gi,'');
+				s = s.replace(/,/gi,'');
 				n = Number(s);
 				n = isNaN(n)?0:n;
 			}

@@ -13,7 +13,7 @@ package com.Leo.utils
 		}
 		
 		var prefix:String = n < 0?'-$':'$';
-		var s:String = prefix + kmark(n.toFixed(2));
+		var s:String = prefix + kmark(Math.abs(n).toFixed(2));
 		
 		return s;
 	}

@@ -23,8 +23,6 @@ package com.Leo.utils
 			var w:int = prW>0?prW:(bitmap.width * scale);
 			var h:int = prH>0?prH:(bitmap.height * scale);
 			
-			trace('w: ' + w +', h: ' + h); 
-			
 			var matrix:Matrix = new Matrix();
 			matrix.scale(scale, scale);
 			
