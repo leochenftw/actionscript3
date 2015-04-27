@@ -124,12 +124,17 @@ package com.Leo.utils
 			_ygap = value;
 		}
 		
+		public override function get height():Number {
+			return _thisMask.height;
+		}
+		
 		public override function set height(value:Number):void {
 			_thisMask.graphics.clear();
 			_thisMask.graphics.beginFill(0x000000);
-			_thisMask.graphics.drawRect(0,0,_w,height);
+			_thisMask.graphics.drawRect(0,0,_w,value);
 			_thisMask.graphics.endFill();
 			this.attributes.height = value;
+			_height = value;
 			adjustMaximumSlide();
 		}
 		
@@ -195,8 +200,31 @@ package com.Leo.utils
 			adjustMaximumSlide();
 		}
 		
+		public function prependVertical(child:DisplayObject):void {
+			if (_pureLayer.numChildren == 0) {
+				_pureLayer.addChild(child);
+			}else{
+				_pureLayer.addChildAt(child,0);
+			}
+			child.x = _xgap;
+			child.y = _ygap;
+			
+			for (var i:int = 1; i < _pureLayer.numChildren; i++){
+				_pureLayer.getChildAt(i).y+= (child.height + _ygap);
+			}
+			
+			if (_delayDistance == 0) {
+				_delayDistance = child.height;
+			}
+			adjustMaximumSlide();
+		}
+		
 		public function set delayDistance(n:Number):void {
 			_delayDistance = n;
+		}
+		
+		public function get pureLayer():Sprite {
+			return _pureLayer;
 		}
 	}
 }
