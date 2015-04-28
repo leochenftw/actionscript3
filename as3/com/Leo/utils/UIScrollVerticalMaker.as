@@ -19,6 +19,8 @@ package com.Leo.utils
 		protected var actualDistance:Number = 0;
 		protected var _associate:UIScrollVerticalMaker;
 		protected var _delayDistance:int = 0;
+		protected var _inTween:Boolean = false;
+		protected var _expandedHeight:Number = 0;
 		public function UIScrollVerticalMaker(screen:Sprite, width:Number, height:Number, xgap:Number=0, ygap:Number=0, style:String = "",associate:UIScrollVerticalMaker=null) {
 			_w = width;
 			_associate = associate;
@@ -139,33 +141,77 @@ package com.Leo.utils
 		}
 		
 		public function expand(child:DisplayObject,extraHeight:Number):void {
+			if (_inTween) return;
+			_inTween = true;
+			var originalY:Number = 0;
 			var i:int = _pureLayer.getChildIndex(child)+1;
-			for (i;i<_pureLayer.numChildren;i++){
-				var thisChild:DisplayObject = _pureLayer.getChildAt(i);
-				if (i<_pureLayer.numChildren-1) {
-					Statics.tLite(thisChild,0.25,{y:thisChild.y + extraHeight});
-				}else{
-					Statics.tLite(thisChild,0.25,{y:thisChild.y + extraHeight, onUpdate:function():void {
-						adjustMaximumSlide();
-					}});
+			if (i == _pureLayer.numChildren) {
+				/*originalY = child.y;
+				Statics.tLite(child,0.25,{y:child.y + extraHeight, onUpdate:function():void {
+					adjustMaximumSlide();
+					_expandedHeight = (child.y - originalY);
+				},onComplete:function():void {
+					trace('done expanding - 1 child case');
+					_inTween = false;
+				}});*/
+				_expandedHeight = child.height;
+				adjustMaximumSlide();
+				_inTween = false;
+			}else{
+				for (i;i<_pureLayer.numChildren;i++){
+					var thisChild:DisplayObject = _pureLayer.getChildAt(i);
+					if (i<_pureLayer.numChildren-1) {
+						Statics.tLite(thisChild,0.25,{y:thisChild.y + extraHeight, onComplete:function():void {
+							_inTween = false;
+						}});
+					}else{
+						originalY = thisChild.y;
+						Statics.tLite(thisChild,0.25,{y:thisChild.y + extraHeight, onUpdate:function():void {
+							adjustMaximumSlide();
+							_expandedHeight = (thisChild.y - originalY);
+						},onComplete:function():void {
+							trace('done expanding');
+							_inTween = false;
+						}});
+					}
 				}
 			}
 		}
 		
-		public function collapse(child:DisplayObject,deductHeight:Number):void {
+		public function collapse(child:DisplayObject):void {
+			if (_inTween) return;
+			_inTween = true;
 			var i:int = _pureLayer.getChildIndex(child)+1;
-			for (i;i<_pureLayer.numChildren;i++){
-				var thisChild:DisplayObject = _pureLayer.getChildAt(i);
-				if (i<_pureLayer.numChildren-1) {
-					Statics.tLite(thisChild,0.25,{y:thisChild.y - deductHeight});
-				}else{
-					Statics.tLite(thisChild,0.25,{y:thisChild.y - deductHeight, onUpdate:function():void {
-						adjustMaximumSlide();
-					}});
+			if (i == _pureLayer.numChildren) {
+//				Statics.tLite(child,0.25,{y:child.y - _expandedHeight, onUpdate:function():void {
+//					adjustMaximumSlide();
+//				},onComplete:function():void {
+//					trace('done collapsing - 1 child case');
+//					_inTween = false;
+//				}});
+				
+			}else{
+				for (i;i<_pureLayer.numChildren;i++){
+					var thisChild:DisplayObject = _pureLayer.getChildAt(i);
+					if (i<_pureLayer.numChildren-1) {
+						Statics.tLite(thisChild,0.25,{y:thisChild.y - _expandedHeight, onComplete:function():void {
+							_inTween = false;
+						}});
+					}else{
+						Statics.tLite(thisChild,0.25,{y:thisChild.y - _expandedHeight, onUpdate:function():void {
+							adjustMaximumSlide();
+						},onComplete:function():void {
+							trace('done collapsing');
+							_inTween = false;
+						}});
+					}
 				}
 			}
 		}
 		
+		public function get inTween():Boolean {
+			return _inTween;
+		}
 		
 		public function attach(child:DisplayObject):void {
 			_pureLayer.addChild(child);
