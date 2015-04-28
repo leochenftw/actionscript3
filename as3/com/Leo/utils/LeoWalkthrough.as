@@ -14,7 +14,7 @@ package com.Leo.utils
 		private var _screenOverlay:Sprite = new Sprite;
 		private var _viewportWidth:int;
 		private var _slides:Vector.<Bitmap> = new Vector.<Bitmap>;
-		private var _idx:int = 0;
+		private var _idx:int = -1;
 		private var _description:Vector.<String> = new Vector.<String>;
 		private var _label:UILabel;
 		public function LeoWalkthrough(viewportWidth:int, bitmapVector:Vector.<Bitmap>,descriptions:Vector.<String>)
@@ -26,7 +26,7 @@ package com.Leo.utils
 			_viewportWidth = viewportWidth;
 			for (var i:int = 0; i < bitmapVector.length; i++) {
 				var bmp:Bitmap = LeoBitmapResizer.resize(bitmapVector[i] as Bitmap,viewportWidth,0);
-				_slides.push(_slides);
+				_slides.push(bmp);
 				(bitmapVector[i] as Bitmap).bitmapData.dispose();
 				bitmapVector[i] = null;
 				_description.push(descriptions[i]);
@@ -47,19 +47,14 @@ package com.Leo.utils
 			_screenOverlay.graphics.beginFill(0x000000,0.9);
 			_screenOverlay.graphics.drawRect(0,0,stage.fullScreenWidth,stage.fullScreenHeight);
 			_screenOverlay.graphics.endFill();
-			stage.addChild(_screenOverlay);
+			stage.addChildAt(_screenOverlay,stage.numChildren-1);
 			stage.addEventListener(MouseEvent.CLICK,clickHandler);
 			
 			this.addChild(_slides[_idx]);
 			pos(_slides[_idx]);
 			_idx++;
-			_label.y = _slides[_idx].y + _slides[_idx].height;
+			_label.y = _slides[_idx].y + _slides[_idx].height + 10;
 			addChild(_label);
-			
-			if (!(this.parent is Stage)) {
-				stage.addChild(this);
-			}
-			
 		}		
 		
 		protected function clickHandler(e:MouseEvent):void
@@ -68,9 +63,11 @@ package com.Leo.utils
 				this.removeChildren();
 				this.addChild(_slides[_idx]);
 				pos(_slides[_idx]);
+				_label.y = _slides[_idx].y + _slides[_idx].height + 10;
+				addChild(_label);
 				_idx++;
 			}else{
-				_idx = 0;
+				_idx = -1;
 				stage.removeEventListener(MouseEvent.CLICK,clickHandler);
 				stage.removeChild(_screenOverlay);
 				stage.removeChild(this);
