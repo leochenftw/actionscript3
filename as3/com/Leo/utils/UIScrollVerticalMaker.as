@@ -199,9 +199,7 @@ package com.Leo.utils
 			_pureLayer.addChild(child);
 			child.x = lastChild ? lastChild.x : _xgap;
 			child.y = lastChild ? (lastChild.y + lastChild.height + _ygap) : _ygap;
-			trace('child height: ' + child.height);
-			trace('child x: ' + child.x);
-			trace('child y: ' + child.y);
+			
 			if (_delayDistance == 0) {
 				_delayDistance = child.height;
 			}
