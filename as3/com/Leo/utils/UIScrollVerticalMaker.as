@@ -9,6 +9,7 @@ package com.Leo.utils
 	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
 	
+	
 	public class UIScrollVerticalMaker extends UIScrollVertical
 	{
 		protected var _pureLayer:Sprite;
@@ -21,7 +22,10 @@ package com.Leo.utils
 		protected var _delayDistance:int = 0;
 		protected var _expandedHeight:Number = 0;
 		public function UIScrollVerticalMaker(screen:Sprite, width:Number, height:Number, xgap:Number=0, ygap:Number=0, style:String = "",associate:UIScrollVerticalMaker=null) {
+			
 			_w = width;
+			_xgap = xgap;
+			_ygap = ygap;
 			_associate = associate;
 			super(screen,XML("<null "+style+"/>"), new Attributes(0, 0, width, height));
 			_slider.addChild(_pureLayer = new Sprite());
@@ -36,6 +40,14 @@ package com.Leo.utils
 			}
 			
 			addEventListener(MouseEvent.MOUSE_DOWN, delayPurposeDown);
+		}
+		
+		public override function clear():void {
+			_pureLayer.removeChildren();
+		}
+		
+		public function set commandlyFreeze(b:Boolean):void {
+			
 		}
 		
 		protected function delayPurposeDown(e:MouseEvent):void
@@ -94,7 +106,12 @@ package com.Leo.utils
 				var sliderHeight:Number = _scrollerHeight>0 ? _scrollerHeight*_scale : _slider.getBounds(this).bottom;
 				_maximumSlide = sliderHeight - _height + PADDING * (_border=="false" ? 0 : 1);
 			}else{
-				_maximumSlide = _pureLayer.height - _thisMask.height;
+				_maximumSlide = pureHeight - _thisMask.height + _ygap*2;
+				if (pureHeight <= _thisMask.height) {
+					this.scrollEnabled = false;
+				}else{
+					this.scrollEnabled = true;
+				}
 			}
 			if (_maximumSlide < 0) {
 				_maximumSlide = 0;
@@ -102,6 +119,22 @@ package com.Leo.utils
 			if (sliderY < -_maximumSlide) {
 				sliderY = -_maximumSlide;
 			}
+		}
+		
+		protected function get pureHeight():Number {
+			var n:Number = _ygap;
+			var hasInvisible:Boolean = false;
+			for (var i:int = 0; i < _pureLayer.numChildren; i++){
+				var thisChild:DisplayObject = _pureLayer.getChildAt(i);
+				if (thisChild.visible) {
+					n += (thisChild.height + _ygap);
+				}else{
+					if (!hasInvisible) {
+						hasInvisible = true;
+					}
+				}
+			}
+			return hasInvisible?n:_pureLayer.height;
 		}
 		
 		protected function mousedownOnLayer(event:MouseEvent):void
@@ -155,7 +188,7 @@ package com.Leo.utils
 		public function attachHorizontal(child:DisplayObject):void {
 			var lastChild:DisplayObject = _pureLayer.numChildren>0 ? _pureLayer.getChildAt(_pureLayer.numChildren - 1) : null;
 			_pureLayer.addChild(child);
-			child.x = lastChild ? lastChild.x + lastChild.width + _xgap : _xgap;
+			child.x = lastChild ? (lastChild.x + lastChild.width + _xgap) : _xgap;
 			child.y = lastChild ? lastChild.y : _ygap;
 			adjustMaximumSlide();
 		}
@@ -165,7 +198,10 @@ package com.Leo.utils
 			var lastChild:DisplayObject = _pureLayer.numChildren>0 ? _pureLayer.getChildAt(_pureLayer.numChildren - 1) : null;
 			_pureLayer.addChild(child);
 			child.x = lastChild ? lastChild.x : _xgap;
-			child.y = lastChild ? lastChild.y + lastChild.height + _ygap : _ygap;
+			child.y = lastChild ? (lastChild.y + lastChild.height + _ygap) : _ygap;
+			trace('child height: ' + child.height);
+			trace('child x: ' + child.x);
+			trace('child y: ' + child.y);
 			if (_delayDistance == 0) {
 				_delayDistance = child.height;
 			}
@@ -202,19 +238,37 @@ package com.Leo.utils
 		public override function removeChild(child:DisplayObject):DisplayObject {
 			var rc:DisplayObject = _pureLayer.removeChild(child);
 			this.height -= rc.height;
+			trace('remover called');
 			attention();
 			return rc;
 		}
 		
 		public function attention():void {
-			if (_pureLayer.numChildren > 0) {
-				for (var i:int = 1; i<_pureLayer.numChildren; i++){
-					var lastChild:DisplayObject = _pureLayer.getChildAt(i-1);
-					var child:DisplayObject = _pureLayer.getChildAt(i);
-					child.y = lastChild.y + lastChild.height;
+			var nextY:int = _ygap;
+			for (var i:int = 0; i<_pureLayer.numChildren;i++){
+				var thisChild:DisplayObject = _pureLayer.getChildAt(i);
+				if (thisChild.visible) {
+					thisChild.y = nextY;
+					nextY = thisChild.y + thisChild.height + _ygap; 
 				}
 			}
 			adjustMaximumSlide();
+		}
+		
+//		public function attention():void {
+//			if (_pureLayer.numChildren > 0) {
+//				for (var i:int = 1; i<_pureLayer.numChildren; i++){
+//					var lastChild:DisplayObject = _pureLayer.getChildAt(i-1);
+//					var child:DisplayObject = _pureLayer.getChildAt(i);
+//					child.y = lastChild.y + lastChild.height + _ygap;
+//				}
+//			}
+//			adjustMaximumSlide();
+//		}
+		
+		public function toTop():void {
+			scrollPositionY = 0;
+			_slider.y = 0;
 		}
 	}
 }

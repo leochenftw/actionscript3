@@ -1,6 +1,5 @@
 ﻿package com.ruochi.shape{
 	import flash.display.Sprite;
-	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 
 	public class RoundRect extends Sprite {

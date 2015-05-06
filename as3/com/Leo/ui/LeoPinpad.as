@@ -1,13 +1,14 @@
 package com.Leo.ui
 {
-	import com.Leo.utils.pf;
 	import com.Leo.utils.LeoButton;
 	import com.Leo.utils.dFormat;
+	import com.Leo.utils.pf;
 	import com.danielfreeman.madcomponents.UILabel;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.text.TextFormat;
 	
 	public class LeoPinpad extends Sprite
 	{
@@ -15,6 +16,10 @@ package com.Leo.ui
 		private var _label:UILabel;
 		private var _dollarMode:Boolean = false;
 		private var _clickBlocker:Sprite = new Sprite;
+		private var _callback:Function = null;
+		private var btnEnter:LeoButton;
+		private var btnBack:LeoButton;
+		private var _myTargetPlaceholder:*;
 		public function LeoPinpad(dollarMode:Boolean = false)
 		{
 			_dollarMode = dollarMode;
@@ -88,12 +93,12 @@ package com.Leo.ui
 				}
 			}
 			
-			var btnBack:LeoButton = new LeoButton(Math.round(this.height*0.5)-1,0,'✗',0xffffff,0xffffff,0);
+			btnBack = new LeoButton(Math.round(this.height*0.5)-1,0,'✗',0xffffff,0xffffff,0);
 			addChild(btnBack);
 			btnBack.width = gw-1;
 			btnBack.x = Math.round(this.width*0.75)+1;
 			
-			var btnEnter:LeoButton = new LeoButton(Math.round(this.height*0.5)-2,0,'✓',0xffffff,0xffffff,0);
+			btnEnter = new LeoButton(Math.round(this.height*0.5)-2,0,'✓',0xffffff,0xffffff,0);
 			addChild(btnEnter);
 			btnEnter.width = gw-1;
 			btnEnter.y = Math.round(this.height*0.5);
@@ -103,16 +108,52 @@ package com.Leo.ui
 			addEventListener(Event.REMOVED_FROM_STAGE, offStage);
 		}
 		
+		public function set myTargetPlaceholder(target:*):void {
+			_myTargetPlaceholder = target;
+		}
+		
 		protected function onStage(e:Event):void
 		{
+			btnBack.labelObject.y = Math.round((btnBack.height - btnBack.labelObject.textHeight)*0.5);
+			btnEnter.labelObject.y = Math.round((btnEnter.height - btnEnter.labelObject.textHeight)*0.5);
 			stage.addChildAt(_clickBlocker,stage.numChildren-1);
 			this.y = Statics.STAGEHEIGHT;
 			Statics.tLite(this, 0.25, {y: Math.round(Statics.STAGEHEIGHT*0.6)});
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, mousedownHandler);
 		}
 		
-		public function close():void {
-			_label.text = dFormat(_label.text);
+		public function set DeleteButtonLabel(s:String):void {
+			btnBack.label = s;
+			if (s.length > 1) {
+				var lbl:UILabel = btnBack.labelObject;
+				var newTF:TextFormat = lbl.getTextFormat();
+				newTF.size = Math.round(btnBack.height*0.2);
+				
+				btnBack.labelObject.defaultTextFormat = newTF;
+				btnBack.labelObject.setTextFormat(newTF);
+				btnBack.labelObject.y = Math.round((btnBack.height - btnBack.labelObject.textHeight)*0.5);
+			}
+		}
+		
+		public function set EnterButtonLabel(s:String):void {
+			btnEnter.label = s;
+			if (s.length > 1) {
+				var lbl:UILabel = btnEnter.labelObject;
+				var newTF:TextFormat = lbl.getTextFormat();
+				newTF.size = Math.round(btnEnter.height*0.2);
+				
+				btnEnter.labelObject.defaultTextFormat = newTF;
+				btnEnter.labelObject.setTextFormat(newTF);
+				btnEnter.labelObject.y = Math.round((btnEnter.height - btnEnter.labelObject.textHeight)*0.5);
+			}
+		}
+		
+		public function set goFunction(f:Function):void {
+			_callback = f;
+		}
+		
+		public function close(e:MouseEvent = null):void {
+			if (_dollarMode) _label.text = dFormat(_label.text);
 			if (stage) {
 				stage.removeChild(_clickBlocker);
 				stage.removeEventListener(MouseEvent.MOUSE_DOWN, mousedownHandler);
@@ -122,6 +163,7 @@ package com.Leo.ui
 			Statics.tLite(this, 0.25, {y: Statics.STAGEHEIGHT, onComplete:function():void {
 				if (lcThis.parent) lcThis.parent.removeChild(lcThis);
 			}});
+			if (_callback) _callback(e);
 		}
 		
 		protected function offStage(e:Event):void
@@ -143,6 +185,7 @@ package com.Leo.ui
 			stage.addEventListener(MouseEvent.MOUSE_UP, mouseupHandler);
 			
 			if (e.target.name == 'pinpad_screen_blocker') {
+				trace('you clicked me');
 				close();
 				return;
 			}
@@ -152,7 +195,7 @@ package com.Leo.ui
 				_currentPressedButton.bgAlpha = 0.2;
 				if (_label) {
 					switch (_currentPressedButton.label) {
-						case '✗':
+						/*case '✗':
 							if (_dollarMode) {
 								if (_label.text == '$' || _label.text == '$0.00' || _label.text == '$0.' || (_label.text.indexOf('$') == 0 && _label.text.length == 2)) {
 									_label.text = '$0.00';
@@ -162,14 +205,37 @@ package com.Leo.ui
 							}else{
 								if (_label.text.length > 0) {
 									_label.text = _label.text.slice(0,-1);
+									if (_label.text.length == 0 && _myTargetPlaceholder) {
+										_myTargetPlaceholder.visible = true;
+									}
+								}
+							}
+							break;*/
+						case btnBack.label:
+							if (_dollarMode) {
+								if (_label.text == '$' || _label.text == '$0.00' || _label.text == '$0.' || (_label.text.indexOf('$') == 0 && _label.text.length == 2)) {
+									_label.text = '$0.00';
+								}else{
+									_label.text = _label.text.slice(0,-1);
+								}
+							}else{
+								if (_label.text.length > 0) {
+									_label.text = _label.text.slice(0,-1);
+									if (_label.text.length == 0 && _myTargetPlaceholder) {
+										_myTargetPlaceholder.visible = true;
+									}
 								}
 							}
 							break;
-						case '✓':
-							close();
+						/*case '✓':
+							close(e);
+							break;*/
+						case btnEnter.label:
+							close(e);
 							break;
 						case 'C':
 							_label.text = _dollarMode?'$0.00':'';
+							if (!_dollarMode && _myTargetPlaceholder) _myTargetPlaceholder.visible = true;
 							break;
 						case '.':
 							if (_label.text.indexOf('.') < 0) {
@@ -185,6 +251,9 @@ package com.Leo.ui
 								if (_label.text == '$0.00') _label.text = '$';
 							}
 							_label.appendText(_currentPressedButton.label);
+							if (_myTargetPlaceholder) {
+								_myTargetPlaceholder.visible = false;
+							}
 							break;
 					}
 				}

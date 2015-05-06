@@ -7,7 +7,7 @@ package com.Leo.utils {
 		}
 		
 		if (value is String) {
-			s = value;
+			s = value.replace(/,/gi,'').replace(/$/gi,'');
 		}
 		var res:String = "";
 		var ticker:int = 0;
