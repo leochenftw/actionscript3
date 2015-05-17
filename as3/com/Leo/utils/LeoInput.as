@@ -24,6 +24,7 @@ package com.Leo.utils
 		protected var _bg:RoundRect;
 		protected var _text:TextField;
 		protected var _parentY:Number = 0;
+		protected var _noJig:Boolean = false;
 		public function LeoInput(w:int, h:int, parentScreen:Sprite, restrictString:String = "", 
 								   tf:TextFormat = null, border:Boolean = false, 
 								   backgroundColor:uint = 0, prompt:String = "",rounded:int = 0, 
@@ -117,6 +118,14 @@ package com.Leo.utils
 			}
 		}
 		
+		public function set noJig(b:Boolean):void {
+			_noJig = b;
+		}
+		
+		public function get noJig():Boolean {
+			return _noJig;
+		}
+		
 		/*private function toSay(e:SoftKeyboardEvent = null):void {
 			if (_moveScreen){
 				_moveScreen(false,this.y + (_bg?_bg.height:this._text.height)*0.5);
@@ -188,21 +197,24 @@ package com.Leo.utils
 		
 		private function onKeyboardDown( event:SoftKeyboardEvent ):void 
 		{ 
-			TweenLite.to(_parentScreen,0.25,{y: _parentY});
+			if (!_noJig) {
+				TweenLite.to(_parentScreen,0.25,{y: _parentY});
+			}
 		}
 		
 		private function onKeyboardUp( event:SoftKeyboardEvent ):void 
 		{ 
-			var offset:Number = 0; 
-			
-			//if the softkeyboard is open and the field is at least partially covered 
-			if( (this.stage.softKeyboardRect.y != 0) && (_text.y + _text.height > this.stage.softKeyboardRect.y) ) 
-				offset = _text.y + _text.height - this.stage.softKeyboardRect.y; 
-			
-			//but don't push the top of the field above the top of the screen 
-			if( _text.y - offset < 0 ) offset += _text.y - offset; 
-			//_parentScreen.y = -offset;
-			TweenLite.to(_parentScreen,0.25,{y: -offset});
+			if (!_noJig) {
+				var offset:Number = 0;
+				//if the softkeyboard is open and the field is at least partially covered 
+				if( (this.stage.softKeyboardRect.y != 0) && (_text.y + _text.height > this.stage.softKeyboardRect.y) ) 
+					offset = _text.y + _text.height - this.stage.softKeyboardRect.y; 
+				
+				//but don't push the top of the field above the top of the screen 
+				if( _text.y - offset < 0 ) offset += _text.y - offset; 
+				//_parentScreen.y = -offset;
+				TweenLite.to(_parentScreen,0.25,{y: -offset});
+			}
 		}
 	}
 }
