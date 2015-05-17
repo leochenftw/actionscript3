@@ -14,7 +14,7 @@ package com.Leo.utils
 	import flash.ui.MultitouchInputMode;
 	
 	
-	public class LeoDatepicker extends LeoSprite
+	public class LeoDatepicker extends Sprite
 	{
 		private var _gw:int,_gh:int,_gg:int = 0;
 		private var _callback:Function;
@@ -34,11 +34,13 @@ package com.Leo.utils
 		private var ra:Sprite = new Sprite;
 		private var _screenMonth:Sprite;
 		private var _tx:Number,_ty:Number = 0;
-		public function LeoDatepicker(w:int,h:int, gap:int,  tf:TextFormat = null, arrows:Object = null, callback:Function = null)
+		private var _btnClose:LeoButton;
+		public function LeoDatepicker(w:int,h:int, gap:int, tf:TextFormat = null, callback:Function = null)
 		{
 			super();
 			
 			this.addEventListener(TransformGestureEvent.GESTURE_SWIPE, onSwipe);
+			this.addEventListener(Event.ADDED_TO_STAGE, init);
 			_gw = _gh = int((w-8*gap)/7);
 			_gg = gap;
 			_tf = tf?tf:new TextFormat('Myriad Pro',int(_gh*0.35),0x00727F,null,null,null,null,null,'center');
@@ -50,8 +52,6 @@ package com.Leo.utils
 			_pickedDateObject.date = _today = _date.getDate();
 			febDate();
 			
-			
-			
 			_stage = new Rect(w,h);
 			_stage.alpha = 0.98;
 			addChild(_stage);
@@ -61,32 +61,48 @@ package com.Leo.utils
 			
 			_screenMonth = monthTemplate();
 			_screenMonth.y = _lblTitle.height + h * 0.1;
-			if (arrows) {
-				var lcla:Sprite = arrows.left as Sprite;
-				var lcra:Sprite = arrows.right as Sprite;
-				
-				lcla.height = lcra.height = _lblTitle.height*0.5;
-				lcla.scaleX = lcra.scaleX = lcla.scaleY;
-				la.addChild(lcla);
-				ra.addChild(lcra);
-				la.x = gap*2;
-				ra.x = w-gap*2-ra.width;
-				la.y = ra.y = _lblTitle.y + (_lblTitle.height * 0.25);
-				addChild(la);
-				addChild(ra);
-				var laBG:Sprite = new Rect((w-gap*2)*0.5,_screenMonth.y);
-				var raBG:Sprite = new Rect((w-gap*2)*0.5,_screenMonth.y);
-				raBG.x = -raBG.width + lcra.width;
-				laBG.y = raBG.y = (la.height - laBG.height) * 0.5;
-				laBG.alpha = raBG.alpha = 0;
-				la.addChild(laBG);
-				ra.addChild(raBG);
-				la.name = 'left';
-				ra.name = 'right';
-				la.addEventListener(MouseEvent.MOUSE_DOWN, clickArrow);
-				ra.addEventListener(MouseEvent.MOUSE_DOWN, clickArrow);
-			}
+			
+			la.graphics.beginFill(0xffffff,0);
+			la.graphics.drawRect(0,0,_lblTitle.height,_lblTitle.height);
+			la.graphics.endFill();
+			
+			ra.graphics.beginFill(0xffffff,0);
+			ra.graphics.drawRect(0,0,_lblTitle.height,_lblTitle.height);
+			ra.graphics.endFill();
+			
+			la.graphics.lineStyle(2, 0x00727F);
+			la.graphics.moveTo(0,Math.round(_lblTitle.height*0.25));
+			la.graphics.lineTo(Math.round(_lblTitle.height*0.25), 0);
+			la.graphics.moveTo(0,Math.round(_lblTitle.height*0.25));
+			la.graphics.lineTo(Math.round(_lblTitle.height*0.25), Math.round(_lblTitle.height*0.5));
+			
+			ra.graphics.lineStyle(2, 0x00727F);
+			ra.graphics.moveTo(_lblTitle.height,Math.round(_lblTitle.height*0.25));
+			ra.graphics.lineTo(_lblTitle.height-Math.round(_lblTitle.height*0.25), 0);
+			ra.graphics.moveTo(_lblTitle.height,Math.round(_lblTitle.height*0.25));
+			ra.graphics.lineTo(_lblTitle.height-Math.round(_lblTitle.height*0.25), Math.round(_lblTitle.height*0.5));
+			la.x = gap*2;
+			ra.x = w-gap*2-ra.width;
+			la.y = ra.y = _lblTitle.y + (_lblTitle.height * 0.25);
+			addChild(la);
+			addChild(ra);
+			la.name = 'left';
+			ra.name = 'right';
+			la.addEventListener(MouseEvent.MOUSE_DOWN, clickArrow);
+			ra.addEventListener(MouseEvent.MOUSE_DOWN, clickArrow);
+			
 			addChild(_screenMonth);
+			
+			_btnClose = new LeoButton(_gh,0,'CLOSE',0xffffff,0xFF4D4D);
+			addChild(_btnClose);
+			_btnClose.y = h - gap - _gh;
+			_btnClose.x = gap;
+			_btnClose.width = w-2*gap;
+			
+		}
+		
+		public function get btnClose():LeoButton {
+			return _btnClose;
 		}
 		
 		private function onSwipe(e:TransformGestureEvent):void {
@@ -99,7 +115,7 @@ package com.Leo.utils
 			}
 		}
 		
-		override protected function init(e:Event=null):void {
+		protected function init(e:Event=null):void {
 			Multitouch.inputMode = MultitouchInputMode.GESTURE;
 			this.scaleX = this.scaleY = 1.5; 
 			this.alpha = 0;
@@ -110,8 +126,10 @@ package com.Leo.utils
 		
 		public function withDrawCal(cbf:Function = null):void {
 			var lcThis:LeoDatepicker = this;
+			var thisParent:* = parent;
 			TweenLite.to(this, 0.25, {alpha: 0, x: _tx, y: _ty, scaleX: 1.5, scaleY: 1.5, onComplete:function():void {
-				parent.removeChild(lcThis);
+				Multitouch.inputMode = MultitouchInputMode.NONE;
+				thisParent.removeChild(lcThis);
 				if (cbf) cbf();
 			}});
 		}
