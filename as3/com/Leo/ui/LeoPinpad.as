@@ -106,6 +106,7 @@ package com.Leo.ui
 			
 			addEventListener(Event.ADDED_TO_STAGE, onStage);
 			addEventListener(Event.REMOVED_FROM_STAGE, offStage);
+			
 		}
 		
 		public function set myTargetPlaceholder(target:*):void {
@@ -120,6 +121,14 @@ package com.Leo.ui
 			this.y = Statics.STAGEHEIGHT;
 			Statics.tLite(this, 0.25, {y: Math.round(Statics.STAGEHEIGHT*0.6)});
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, mousedownHandler);
+			if (stage.contains(Statics._EDITOR)) {
+				stage.addChild(Statics._EDITOR);
+				stage.addChild(this);
+			}
+			if (stage.contains(Statics._CIGEDITOR)) {
+				stage.addChild(Statics._CIGEDITOR);
+				stage.addChild(this);
+			}
 		}
 		
 		public function set DeleteButtonLabel(s:String):void {
@@ -180,8 +189,24 @@ package com.Leo.ui
 			_label = prLabel;
 		}
 		
+		private function isMyChild(child:*):Boolean {
+			var b:Boolean = false;
+			
+			while(child.parent) {
+				if (child.parent is LeoPinpad) {
+					b = true;
+					return b;
+				}else{
+					child = child.parent;
+				}
+			}
+			
+			return b;
+		}
+		
 		protected function mousedownHandler(e:MouseEvent):void
 		{
+			if (!stage) return;
 			stage.addEventListener(MouseEvent.MOUSE_UP, mouseupHandler);
 			
 			if (e.target.name == 'pinpad_screen_blocker') {
@@ -191,26 +216,11 @@ package com.Leo.ui
 			}
 			
 			if (e.target is LeoButton || e.target.parent is LeoButton) {
+				if (!isMyChild(e.target)) { trace('clicked others child'); return;} 
 				_currentPressedButton = (e.target is LeoButton)?(e.target as LeoButton):(e.target.parent as LeoButton);
 				_currentPressedButton.bgAlpha = 0.2;
 				if (_label) {
 					switch (_currentPressedButton.label) {
-						/*case '✗':
-							if (_dollarMode) {
-								if (_label.text == '$' || _label.text == '$0.00' || _label.text == '$0.' || (_label.text.indexOf('$') == 0 && _label.text.length == 2)) {
-									_label.text = '$0.00';
-								}else{
-									_label.text = _label.text.slice(0,-1);
-								}
-							}else{
-								if (_label.text.length > 0) {
-									_label.text = _label.text.slice(0,-1);
-									if (_label.text.length == 0 && _myTargetPlaceholder) {
-										_myTargetPlaceholder.visible = true;
-									}
-								}
-							}
-							break;*/
 						case btnBack.label:
 							if (_dollarMode) {
 								if (_label.text == '$' || _label.text == '$0.00' || _label.text == '$0.' || (_label.text.indexOf('$') == 0 && _label.text.length == 2)) {
@@ -227,9 +237,6 @@ package com.Leo.ui
 								}
 							}
 							break;
-						/*case '✓':
-							close(e);
-							break;*/
 						case btnEnter.label:
 							close(e);
 							break;
@@ -238,23 +245,33 @@ package com.Leo.ui
 							if (!_dollarMode && _myTargetPlaceholder) _myTargetPlaceholder.visible = true;
 							break;
 						case '.':
-							if (_label.text.indexOf('.') < 0) {
-								_label.appendText(_currentPressedButton.label);
+							if (_label.text.length == 0) {
+								if (!_dollarMode && _myTargetPlaceholder) _myTargetPlaceholder.visible = false;
+								_label.text = _dollarMode?'$0.':'0.';
 							}else{
-								if (pf(_label.text) == 0) {
-									_label.text = '$0.';
+								if (_label.text.indexOf('.') < 0) {
+									_label.appendText(_currentPressedButton.label);
+								}else{
+									if (pf(_label.text) == 0) {
+										if (!_dollarMode && _myTargetPlaceholder) _myTargetPlaceholder.visible = false;
+										_label.text = _dollarMode?'$0.':'0.';
+									}
 								}
 							}
 							break;
 						default:
-							if (_currentPressedButton.label != '0') {
-								if (_label.text == '$0.00') _label.text = '$';
-							}
-							_label.appendText(_currentPressedButton.label);
-							if (_myTargetPlaceholder) {
-								_myTargetPlaceholder.visible = false;
+							trace(_currentPressedButton.label);
+							if (_currentPressedButton.label != 'Save') {
+								if (_currentPressedButton.label != '0') {
+									if (_label.text == '$0.00') _label.text = '$';
+								}
+								_label.appendText(_currentPressedButton.label);
+								if (_myTargetPlaceholder) {
+									_myTargetPlaceholder.visible = false;
+								}
 							}
 							break;
+							
 					}
 				}
 			}
