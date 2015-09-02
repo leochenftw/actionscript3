@@ -121,14 +121,14 @@ package com.Leo.ui
 			this.y = Statics.STAGEHEIGHT;
 			Statics.tLite(this, 0.25, {y: Math.round(Statics.STAGEHEIGHT*0.6)});
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, mousedownHandler);
-			if (stage.contains(Statics._EDITOR)) {
+			/*if (stage.contains(Statics._EDITOR)) {
 				stage.addChild(Statics._EDITOR);
 				stage.addChild(this);
 			}
 			if (stage.contains(Statics._CIGEDITOR)) {
 				stage.addChild(Statics._CIGEDITOR);
 				stage.addChild(this);
-			}
+			}*/
 		}
 		
 		public function set DeleteButtonLabel(s:String):void {
