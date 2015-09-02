@@ -423,9 +423,10 @@ package com.Leo.utils
 			}
 			
 			if (!_placeHolder && _strPlaceholder.length > 0){
-				_placeHolder = new UILabel(this,5,0,'', new TextFormat("Myriad Pro",this.st.fontSize,0xcccccc,false));
+				_placeHolder = new UILabel(this,5,0,'', new TextFormat("Myriad Pro",int(this.st.fontSize*0.65),0xcccccc,false));
 				_placeHolder.htmlText = _strPlaceholder;
 				_placeHolder.fixwidth = width;
+				_placeHolder.y = int((this.height -_placeHolder.height)*0.5);
 				if (numberOfLines > 1){
 					_placeHolder.multiline = _placeHolder.wordWrap = true;
 				}
