@@ -2,6 +2,7 @@ package com.Leo.utils
 {
 	import com.danielfreeman.madcomponents.UILabel;
 	
+	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -38,9 +39,10 @@ package com.Leo.utils
 		protected var _multiline:Boolean = false;
 		protected var _lblPlaceholder:UILabel;
 		protected var _txtFormat:TextFormat;
-		
+		protected var _unfreezeUponAddtoScreen:Boolean = true;
 		protected var _snapshot:Sprite = new Sprite;
-		public function LeoNativeText(txtFormat:TextFormat, w:int,h:int,r:Number,bgColor:uint, bgAlpha:Number = 1, padding:int = 10, border:Number = 0, borderColor:uint = 0x000000, borderAlpha: Number = 1, multiline:Boolean = false,placeHolder:String = '')
+		protected var _enterLabel:String = '';
+		public function LeoNativeText(txtFormat:TextFormat, w:int,h:int,r:Number,bgColor:uint, bgAlpha:Number = 1, padding:int = 10, border:Number = 0, borderColor:uint = 0x000000, borderAlpha: Number = 1, multiline:Boolean = false,placeHolder:String = '',enterLabel = '')
 		{
 			_txtFormat = txtFormat;
 			_width = w;
@@ -54,6 +56,8 @@ package com.Leo.utils
 			_borderAlpha = borderAlpha;
 			_multiline = multiline;
 			_placeHolder = placeHolder;
+			_enterLabel = enterLabel;
+			
 			drawBG();
 			if (_placeHolder.length > 0) {
 				_lblPlaceholder = new UILabel(this,_padding,_padding,_placeHolder,txtFormat);
@@ -71,15 +75,30 @@ package com.Leo.utils
 			this._txt = new StageText(stio);
 			this._txt.fontFamily = txtFormat.font;
 			this._txt.fontSize = txtFormat.size as int;
+			this._txt.returnKeyLabel = enterLabel;
+			if (_enterLabel == 'done') {
+				this._txt.addEventListener(Event.CHANGE,function(e:Event):void {
+					var str:String = (e.target as StageText).text;
+					if (str.charAt(str.length - 1) == '\n'){
+						stage.focus = null;
+					}
+				});
+			}
 			this._txt.addEventListener(FocusEvent.FOCUS_IN, focin);
 			this.addEventListener(Event.ADDED_TO_STAGE, init);
+		}
+		
+		public function set unfreezeUponAddtoScreen(b:Boolean):void {
+			_unfreezeUponAddtoScreen = b;
 		}
 		
 		protected function focin(e:FocusEvent):void
 		{
 			this._txt.addEventListener(FocusEvent.FOCUS_OUT, focout);
 			if (_lblPlaceholder && contains(_lblPlaceholder)) removeChild(_lblPlaceholder); 
+			
 		}
+		
 		
 		protected function focout(e:FocusEvent):void
 		{
@@ -92,7 +111,9 @@ package com.Leo.utils
 		}
 		
 		protected function init(e:Event):void {
-			unfreeze();
+			if (_unfreezeUponAddtoScreen){
+				unfreeze();
+			}
 			if (_lblPlaceholder && this._txt.text.length == 0) this.addChild(_lblPlaceholder);
 			this._txt.viewPort = new Rectangle(this.x + _padding, this.y + _padding, _width - _padding*2, _height - _padding*2);
 		}
@@ -105,10 +126,10 @@ package com.Leo.utils
 			if (this._txt&&stage){
 				var bmd:BitmapData = new BitmapData(this._txt.viewPort.width, this._txt.viewPort.height, true,0x000000);
 				this._txt.drawViewPortToBitmapData(bmd);
-				
-				_snapshot.graphics.clear();
-				_snapshot.graphics.beginBitmapFill(bmd,null,false,true);
-				_snapshot.graphics.endFill();
+				var bmp:Bitmap = new Bitmap(bmd,'auto',true);
+
+				_snapshot.removeChildren();
+				_snapshot.addChild(bmp);
 				_snapshot.x = _padding;
 				_snapshot.y = _padding;
 				addChild(_snapshot);

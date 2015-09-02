@@ -268,6 +268,10 @@ package com.Leo.utils
 			scrollPositionY = 0;
 			_slider.y = 0;
 		}
+		
+		public function freeze():void {
+			
+		}
 	}
 }
 
