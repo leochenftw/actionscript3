@@ -4,8 +4,17 @@ package com.Leo.utils
 	import com.greensock.easing.Circ;
 	
 	import flash.display.Stage;
+	import flash.events.KeyboardEvent;
+	import flash.ui.Keyboard;
+	
+	import Managers.AssetManager;
 	
 	import Pages.Page;
+	import Pages.PageDiary;
+	import Pages.PageMain;
+	
+	import UI.UIEditor;
+	import UI.UISelectList;
 
 	public class Navigator
 	{
@@ -20,6 +29,8 @@ package com.Leo.utils
 			_pages = pages;
 			_tweenType = tween;
 			_duration = duration;
+			
+			
 		}
 	
 		public function next(tween:String = null,callback:Function = null):void {
@@ -65,6 +76,7 @@ package com.Leo.utils
 					break;
 			}
 		}
+		
 		
 	}
 }

@@ -208,6 +208,11 @@ package com.Leo.utils
 		/* native text setters */
 		public function set text(txt:String):void {
 			this._txt.text = txt;
+			if (_lblPlaceholder) {
+				if (this._txt.text.length == 0) {
+					addChild(_lblPlaceholder);
+				}
+			}
 		}
 		
 		public function set autoCapitalize(autoCapitalize:String):void
